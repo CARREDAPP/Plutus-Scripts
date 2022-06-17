@@ -1,0 +1,12 @@
+﻿Cardano Recycling DApp
+
+
+Workflow:
+* Household: identity, type, weight and location
+* Buyer: type, min volume,
+* Payout after Quantity Q.
+* Cancel offer(?), Update (buyer updates), Complete (tranches?) 
+
+
+Datum: pkh (2), quantity, price (kg/total), transID
+Will the buyer need to be registered or they can just pay on escrow?
