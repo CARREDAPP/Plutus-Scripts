@@ -10,3 +10,4 @@ Workflow:
 
 Datum: pkh (2), quantity, price (kg/total), transID
 Will the buyer need to be registered or they can just pay on escrow?
+Fees for using the App?
