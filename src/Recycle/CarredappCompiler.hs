@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 
-module CarredappCompiler where
+module Recycle.CarredappCompiler where
 
 import Cardano.Api
 import Cardano.Api.Shelley (PlutusScript (..))
@@ -15,7 +15,7 @@ import Plutus.V1.Ledger.Api (Data (B, Constr, I, List, Map), ToData, toData)
 
 
 -- import Carredapp Validator Script 
-import CarredappMkt
+import Recycle.CarredappMkt
 
 dataToScriptData :: Data -> ScriptData
 dataToScriptData (Constr n xs) = ScriptDataConstructor n $ dataToScriptData <$> xs
@@ -34,7 +34,7 @@ writeValidator file = writeFileTextEnvelope @(PlutusScript PlutusScriptV1) file 
 -- writeValidatorScript allows us to parameterized the Recycling script
 
 writeRecycleEscrowScript :: IO (Either (FileError ()) ())
-writeRecycleEscrowScript = writeValidator "../../Testnet/Recycle/front-v1.plutus" $ CarredappMkt.validator $ RecycleParam
+writeRecycleEscrowScript = writeValidator "src/output/recycle-v1.plutus" $ Recycle.CarredappMkt.validator $ RecycleParam
     {
       carreDappAddress = "9c68b6455daa791d56ba1a5c33fbc9e30c92041947a74eb82589cbe7"
     , fees     = 3000000

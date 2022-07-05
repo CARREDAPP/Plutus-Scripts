@@ -11,7 +11,7 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 
-module CarredappMkt where
+module Recycle.CarredappMkt where
 
 import              Ledger              hiding (singleton)
 import              Ledger.Typed.Scripts
@@ -45,21 +45,21 @@ PlutusTx.unstableMakeIsData ''CarredappDatum
 --Recycling company weights the quantity, certifies the type (quality?)
 --So, we need to check the quantity before paying out
 
-data RecycleAction = CancelR | CancelH | CancelP | Payout
+data RecycleAction = CancelR | CancelH | CancelC  | Payout
   deriving Show
 
 PlutusTx.makeIsDataIndexed ''RecycleAction [('CancelR, 0), ('CancelH, 1), ('CancelC, 2), ('Payout, 3)]
 
 PlutusTx.makeLift ''RecycleAction
 
-{-# INLINABLE RecycleDatum #-}
-RecycleDatum :: Maybe Datum -> Maybe CarredappDatum
-RecycleDatum md = do
+{-# INLINABLE recycleDatum #-}
+recycleDatum :: Maybe Datum -> Maybe CarredappDatum
+recycleDatum md = do
     Datum d <- md
     PlutusTx.fromBuiltinData d
     
 {-# INLINEABLE mkValidator #-}
-mkValidator :: RecycleParam -> RecycleDatum -> RecycleAction -> ScriptContext -> Bool
+mkValidator :: RecycleParam -> CarredappDatum -> RecycleAction -> ScriptContext -> Bool
 mkValidator rp dat action ctx =
   case action of
 
@@ -73,7 +73,7 @@ mkValidator rp dat action ctx =
     CancelC     ->  traceIfFalse "Only Company can Cancel This batch"          signedByCompany  &&
                     traceIfFalse "Fees Paid"                                   recycleFeesPaid  
 
-   Payout       ->  traceIfFalse "Only Company can Pay to Household"            signedByCompany &&
+    Payout       ->  traceIfFalse "Only Company can Pay to Household"            signedByCompany &&
                     traceIfFalse "Household has to receive funds"               fundsToHousehold &&
                     traceIfFalse "Fees Paid"                                    recycleFeesPaid
 
@@ -88,7 +88,7 @@ mkValidator rp dat action ctx =
     signedByHousehold = txSignedBy info $ householdAddress  dat
 
     signedByCompany :: Bool
-    signedByCompany = txSignedBy info $ providerAddress dat
+    signedByCompany = txSignedBy info $ companyAddress dat
 
 -- Values Paid to Recycling Actors
 
@@ -118,7 +118,7 @@ mkValidator rp dat action ctx =
 data RecycleTypes
 
 instance ValidatorTypes RecycleTypes where
-    type DatumType RecycleTypes = RecycleDatum
+    type DatumType RecycleTypes = CarredappDatum
     type RedeemerType RecycleTypes = RecycleAction
 
 typedValidator :: RecycleParam -> TypedValidator RecycleTypes
@@ -127,7 +127,7 @@ typedValidator bp =
     ($$(PlutusTx.compile [||mkValidator||]) `PlutusTx.applyCode` PlutusTx.liftCode bp)
     $$(PlutusTx.compile [||wrap||])
   where
-    wrap = wrapValidator @RecycleDatum @RecycleAction
+    wrap = wrapValidator @CarredappDatum @RecycleAction
 
 validator :: RecycleParam -> Validator
 validator = validatorScript . typedValidator
